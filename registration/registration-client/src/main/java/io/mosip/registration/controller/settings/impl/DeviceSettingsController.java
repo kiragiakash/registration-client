@@ -521,6 +521,8 @@ public class DeviceSettingsController extends BaseController implements Settings
 		deviceInfo.setName(device.getName());
 		if (device.getDeviceType().equals(DeviceType.CAMERA)) {
 			deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("webcam"));
+		} else if (device.getDeviceType().equals(DeviceType.SCANNER)) {
+				deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("scanner"));
 		} else {
 			deviceInfo.setModel(RegistrationConstants.HYPHEN);
 		}
