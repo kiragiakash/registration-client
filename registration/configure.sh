@@ -9,6 +9,7 @@ work_dir="$work_dir"
 client_version_env="$client_version_env" #We should pick this from the jar not as an argument.
 client_upgrade_server="$client_upgrade_server_env" #docker hosted url
 reg_client_sdk_url="$reg_client_sdk_url_env"
+reg_client_custom_impls_url="$reg_client_custom_impls_url_env"
 artifactory_url="$artifactory_url_env"
 keystore_secret="$keystore_secret_env"
 reg_client_custom_impls_url="$reg_client_custom_impls_url_env"
