@@ -271,7 +271,8 @@ public class DeviceSettingsController extends BaseController implements Settings
 			Map<String, List<MdmBioDevice>> biometricDevices = MosipDeviceSpecificationFactory.getAvailableDeviceInfo();
 			columnsCount = biometricDevices.size();
 			List<DocScanDevice> scannerDevices = docScannerFacade.getConnectedDevices();
-			LOGGER.info("Connected devices : {}", scannerDevices);
+			LOGGER.info("Connected scanner devices : {}", scannerDevices);
+			LOGGER.info("Connected biometric devices : {}", biometricDevices);
 			if (!scannerDevices.isEmpty()) {
 				++columnsCount;
 			}
