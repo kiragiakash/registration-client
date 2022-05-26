@@ -282,7 +282,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 			GridPane gridPane = createGridPane(columnsCount);
 			addContentToGridPane(gridPane, biometricDevices, scannerDevices);
 			contentPane.setContent(gridPane);
-			
+			LOGGER.info("Set content completed ...");
 			SessionContext.map().put(RegistrationConstants.ISPAGE_NAVIGATION_ALERT_REQ,
 					RegistrationConstants.ENABLE);
 		} catch (RegBaseCheckedException exception) {
@@ -337,6 +337,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 			rowIndex = (columnIndex == 1) ? (rowIndex + 1) : rowIndex;
 			columnIndex = (columnIndex == 1) ? 0 : (columnIndex + 1);
 		}
+		LOGGER.info("Biometrics devices list loaded...");
 		if (!scannerDevices.isEmpty()) {
 			GridPane mainGridPane = createDevicePane("scannerDevice", "scanner", null, scannerDevices);
 			if (applicationContext.isPrimaryLanguageRightToLeft()) {
@@ -345,6 +346,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 			gridPane.add(mainGridPane, columnIndex, rowIndex);
 			rowIndex = (columnIndex == 1) ? (rowIndex + 1) : rowIndex;
 			columnIndex = (columnIndex == 1) ? 0 : (columnIndex + 1);
+			LOGGER.info("Scanner devices list loaded...");
 		}
 	}
 
