@@ -271,8 +271,6 @@ public class DeviceSettingsController extends BaseController implements Settings
 			Map<String, List<MdmBioDevice>> biometricDevices = MosipDeviceSpecificationFactory.getAvailableDeviceInfo();
 			columnsCount = biometricDevices.size();
 			List<DocScanDevice> scannerDevices = docScannerFacade.getConnectedDevices();
-			LOGGER.info("Connected scanner devices : {}", scannerDevices);
-			LOGGER.info("Connected biometric devices : {}", biometricDevices);
 			if (!scannerDevices.isEmpty()) {
 				++columnsCount;
 			}
@@ -282,7 +280,7 @@ public class DeviceSettingsController extends BaseController implements Settings
 			GridPane gridPane = createGridPane(columnsCount);
 			addContentToGridPane(gridPane, biometricDevices, scannerDevices);
 			contentPane.setContent(gridPane);
-			LOGGER.info("Set content completed ...");
+			
 			SessionContext.map().put(RegistrationConstants.ISPAGE_NAVIGATION_ALERT_REQ,
 					RegistrationConstants.ENABLE);
 		} catch (RegBaseCheckedException exception) {
@@ -337,7 +335,6 @@ public class DeviceSettingsController extends BaseController implements Settings
 			rowIndex = (columnIndex == 1) ? (rowIndex + 1) : rowIndex;
 			columnIndex = (columnIndex == 1) ? 0 : (columnIndex + 1);
 		}
-		LOGGER.info("Biometrics devices list loaded...");
 		if (!scannerDevices.isEmpty()) {
 			GridPane mainGridPane = createDevicePane("scannerDevice", "scanner", null, scannerDevices);
 			if (applicationContext.isPrimaryLanguageRightToLeft()) {
@@ -346,7 +343,6 @@ public class DeviceSettingsController extends BaseController implements Settings
 			gridPane.add(mainGridPane, columnIndex, rowIndex);
 			rowIndex = (columnIndex == 1) ? (rowIndex + 1) : rowIndex;
 			columnIndex = (columnIndex == 1) ? 0 : (columnIndex + 1);
-			LOGGER.info("Scanner devices list loaded...");
 		}
 	}
 
@@ -523,11 +519,10 @@ public class DeviceSettingsController extends BaseController implements Settings
 		ScanDeviceInfo deviceInfo = new ScanDeviceInfo();
 		deviceInfo.setId(device.getId());
 		deviceInfo.setName(device.getName());
-		LOGGER.info(device.getId() + " - " + device.getDeviceType());
 		if (device.getDeviceType().equals(DeviceType.CAMERA)) {
 			deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("webcam"));
 		} else if (device.getDeviceType().equals(DeviceType.SCANNER)) {
-//				deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("scanner"));
+				deviceInfo.setModel(applicationContext.getApplicationLanguageLabelBundle().getString("scanner"));
 		} else {
 			deviceInfo.setModel(RegistrationConstants.HYPHEN);
 		}
