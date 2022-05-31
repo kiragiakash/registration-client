@@ -5,6 +5,7 @@ import io.mosip.registration.api.docscanner.DocScannerService;
 import io.mosip.registration.api.docscanner.dto.DocScanDevice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -14,10 +15,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class ScannerStubImpl implements DocScannerService {
 
+    @Value("#{${mosip.registration.docscanner.id}}")
+    private Map<String, String> id;
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(ScannerStubImpl.class);
     private static final String SERVICE_NAME = "MOSIP-STUB";
     private static final String DEVICE_NAME = "STUB-SCANNER";
@@ -53,12 +59,16 @@ public class ScannerStubImpl implements DocScannerService {
 
     @Override
     public List<DocScanDevice> getConnectedDevices() {
-        DocScanDevice docScanDevice = new DocScanDevice();
-        docScanDevice.setServiceName(getServiceName());
-        docScanDevice.setDeviceType(DeviceType.SCANNER);
-        docScanDevice.setName(DEVICE_NAME);
-        docScanDevice.setId(DEVICE_NAME);
-        return Arrays.asList(docScanDevice);
+        Optional<String> result = id.keySet().stream().filter( k -> DEVICE_NAME.matches(id.get(k)) ).findFirst();
+        if(result.isPresent()) {
+            DocScanDevice docScanDevice = new DocScanDevice();
+            docScanDevice.setServiceName(getServiceName());
+            docScanDevice.setDeviceType(DeviceType.SCANNER);
+            docScanDevice.setName(DEVICE_NAME);
+            docScanDevice.setId(DEVICE_NAME);
+            return Arrays.asList(docScanDevice);
+        }
+        return null;
     }
 
     @Override
