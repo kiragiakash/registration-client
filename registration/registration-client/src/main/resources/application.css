@@ -1040,7 +1040,6 @@ Working on new Css by taleev
 	-fx-border-color: #C9C9C9;
 	-fx-font-size: 14.0px;
 	-fx-pref-height: 10.0px;
-	-fx-pref-width: 400.0px;
 }
 
 .loginCombobox {
@@ -1074,7 +1073,6 @@ Working on new Css by taleev
 	-fx-border-color: red;
 	-fx-font-size: 14.0px;
 	-fx-pref-height: 10.0px;
-	-fx-pref-width: 400.0px;
 }
 
 .demographicCombobox:focused {
@@ -1083,7 +1081,6 @@ Working on new Css by taleev
 	-fx-border-color: #005baa;
 	-fx-font-size: 14.0px;
 	-fx-pref-height: 10.0px;
-	-fx-pref-width: 400.0px;
 }
 
 .demographicCombobox .combo-box-popup>.list-view>.virtual-flow>.clipped-container>.sheet>.list-cell:filled:hover
