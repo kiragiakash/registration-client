@@ -114,7 +114,7 @@ public class DropDownFxControl extends FxControl {
 				simpleTypeVBox.getPrefWidth(), false);
 		comboBox.setMaxWidth(Double.MAX_VALUE);
 		simpleTypeVBox.getChildren().add(comboBox);
-		simpleTypeVBox.setMargin(comboBox, new Insets(0, 30, 0, 0));
+		simpleTypeVBox.setMargin(comboBox, new Insets(0, 15, 0, 0));
 
 
 		comboBox.setOnMouseExited(event -> {
