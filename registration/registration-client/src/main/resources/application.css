@@ -630,7 +630,7 @@
 Working on new Css by taleev
 */
 #loginScreen {
-	-fx-background-image: url('/images/LoginBackGround.png');
+	-fx-background-image: url('/images/generic-background3.jpg');
 	-fx-background-size: cover, auto;
 	-fx-background-position: left top, center;
 }
@@ -1987,7 +1987,7 @@ Working on new Css by taleev
 	-fx-text-fill: #005baa;
 	-fx-font-family: Roboto;
 	-fx-background-color: #FFFFFF;
-	-fx-border-radius: 0.0, 0.0, 0.0, 0.0;
+	-fx-border-radius: 1.0, 1.0, 1.0, 1.0;
 }
 
 .operationalPaneDetailsSync {
