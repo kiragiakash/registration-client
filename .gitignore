@@ -29,3 +29,6 @@ test.txt
 /.recommenders/
 **/*.iml
 .vscode
+/db/reg/seg0/c1a1.dat
+db/
+lib/

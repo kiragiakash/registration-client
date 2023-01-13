@@ -8,6 +8,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -147,6 +148,8 @@ public class AckReceiptController extends BaseController implements Initializabl
 
 		clearRegistrationData();
 		goToHomePageFromRegistration();
+
+
 	}
 
 	/**

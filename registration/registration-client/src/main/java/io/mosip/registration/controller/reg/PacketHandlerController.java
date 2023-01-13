@@ -56,6 +56,7 @@ import io.mosip.registration.service.operator.UserOnboardService;
 import io.mosip.registration.service.packet.PacketHandlerService;
 import io.mosip.registration.service.packet.ReRegistrationService;
 import io.mosip.registration.service.packet.RegistrationApprovalService;
+import io.mosip.registration.service.sync.PolicySyncService;
 import io.mosip.registration.service.sync.PreRegistrationDataSyncService;
 import io.mosip.registration.service.template.TemplateService;
 import io.mosip.registration.update.SoftwareUpdateHandler;
@@ -195,6 +196,9 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 	@Autowired
 	private UserOnboardController userOnboardController;
+
+	@Autowired
+	private PolicySyncService policySyncService;
 
 	@Autowired
 	private PacketHandlerService packetHandlerService;
@@ -738,6 +742,11 @@ public class PacketHandlerController extends BaseController implements Initializ
 
 		LOGGER.info(PACKET_HANDLER, APPLICATION_NAME, APPLICATION_ID,
 				"Auto Approval of Packet when EOD process disabled ended");
+
+	}
+	private ResponseDTO isKeyValid() {
+
+		return policySyncService.checkKeyValidation();
 
 	}
 
