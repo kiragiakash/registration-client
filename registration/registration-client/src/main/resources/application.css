@@ -950,6 +950,7 @@ Working on new Css by taleev
 	-fx-border-width: 0.0;
 	-fx-text-fill: #666666;
 	-fx-font-size: 1em;
+	-fx-min-width: 6em;
 }
 
 .paginationLabel {
@@ -2525,6 +2526,7 @@ Working on new Css by taleev
 .schedulerTitle {
 	-fx-font-size: 14.0px;
 	-fx-border-width: 0.0 0.0 1.0 0.0;
+	-fx-border-color: black;
 	-fx-background-color: #175768;
 }
 

@@ -531,7 +531,7 @@
              <HBox id="footer-section"   GridPane.columnIndex="2" GridPane.rowIndex="1">
                      <children>
                          <Label text="%regClientVersion" textAlignment="CENTER" prefHeight="30.0" />
-                         <Label text=" : training-1.2.0.1-B1 " />
+                         <Label text=" :  " />
                          <Label fx:id="versionValueLabel" textAlignment="CENTER" />
                      </children>
              </HBox>

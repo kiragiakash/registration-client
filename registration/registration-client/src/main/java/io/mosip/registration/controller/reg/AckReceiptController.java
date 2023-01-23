@@ -149,7 +149,6 @@ public class AckReceiptController extends BaseController implements Initializabl
 		clearRegistrationData();
 		goToHomePageFromRegistration();
 
-
 	}
 
 	/**
