@@ -1343,7 +1343,7 @@ public class BaseController {
 	}
 
 	protected void updateByAttempt(double qualityScore, Image streamImage, double thresholdScore,
-								   ImageView streamImagePane, Label qualityText, ProgressBar progressBar, Label progressQualityScore) {
+								   ImageView streamImagePane, Label qualityText, ProgressBar progressBar) {
 
 		String qualityScoreLabelVal = getQualityScoreText(qualityScore);
 
@@ -1358,7 +1358,7 @@ public class BaseController {
 			progressBar.setProgress(qualityScore / 100);
 
 			// Progress Bar Quality Score
-			progressQualityScore.setText(qualityScoreLabelVal);
+			//progressQualityScore.setText(qualityScoreLabelVal);
 
 			if (qualityScore >= thresholdScore) {
 				progressBar.getStyleClass().removeAll(RegistrationConstants.PROGRESS_BAR_RED);
