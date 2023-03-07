@@ -7,15 +7,8 @@ import static io.mosip.registration.constants.RegistrationConstants.HASH;
 import static io.mosip.registration.constants.RegistrationConstants.REG_AUTH_PAGE;
 
 import java.awt.event.KeyAdapter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import io.mosip.commons.packet.dto.packet.SimpleDto;
 import javafx.scene.Cursor;
@@ -818,6 +811,16 @@ public class GenericController extends BaseController {
 			screenTab.setContent(scrollPane);
 			tabPane.getTabs().add(screenTab);
 		}
+
+		//TO BE REMOVED
+		String langCode = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
+		getRegistrationDTOFromSession().addDemographicField("bloodType", Arrays.asList(new SimpleDto(langCode, "A")));
+		getRegistrationDTOFromSession().addDemographicField("homeless", Arrays.asList(new SimpleDto(langCode, "Yes")));
+		getRegistrationDTOFromSession().addDemographicField("residenceStatus", Arrays.asList(new SimpleDto(langCode, "Non-Foreigner")));
+		getRegistrationDTOFromSession().addDemographicField("state", Arrays.asList(new SimpleDto(langCode, "Karnataka")));
+		getRegistrationDTOFromSession().addDemographicField("city", Arrays.asList(new SimpleDto(langCode, "Bengaluru")));
+		getRegistrationDTOFromSession().addDemographicField("locality", Arrays.asList(new SimpleDto(langCode, "Electronics City")));
+		getRegistrationDTOFromSession().addDemographicField("postalCode", "123");
 
 		//refresh to reflect the initial visibility configuration
 		refreshFields();
