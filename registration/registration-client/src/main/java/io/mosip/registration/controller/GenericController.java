@@ -994,7 +994,7 @@ public class GenericController extends BaseController {
 	public void refreshFields() {
 		orderedScreens.values().forEach(screen -> { refreshScreenVisibility(screen.getName()); });
 	}
-	private void loadDefaultReg() {
+	/*private void loadDefaultReg() {
 		for (UiScreenDTO screenDTO : orderedScreens.values()) {
 			for (UiFieldDTO field : screenDTO.getFields()) {
 				FxControl fxControl = getFxControl(field.getId());
@@ -1015,7 +1015,7 @@ public class GenericController extends BaseController {
 				}
 			}
 		}
-	}
+	}*/
 	public void handleContinueButton() {
 		TabPane tabPane = (TabPane) anchorPane.lookup(HASH+getRegistrationDTOFromSession().getRegistrationId());
 		int selectedIndex = tabPane.getSelectionModel().getSelectedIndex();
