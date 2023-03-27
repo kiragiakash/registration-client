@@ -78,7 +78,7 @@ public class DOBAgeFxControl extends FxControl {
 				.getBundle(langCode, RegistrationConstants.LABELS);
 
 		VBox ageVBox = new VBox();
-		ageVBox.setPrefWidth(390);
+		//ageVBox.setPrefWidth(390);
 
 		List<String> labels = new ArrayList<>();
 		getRegistrationDTo().getSelectedLanguagesByApplicant().forEach(lCode -> {
@@ -126,7 +126,7 @@ public class DOBAgeFxControl extends FxControl {
 		ageVBox.getChildren().add(getLabel(uiFieldDTO.getId() + RegistrationConstants.ERROR_MSG, null,
 				RegistrationConstants.DemoGraphicFieldMessageLabel, false, ageVBox.getPrefWidth()));
 
-		dobHBox.prefWidthProperty().bind(ageVBox.widthProperty());
+		//dobHBox.prefWidthProperty().bind(ageVBox.widthProperty());
 
 		changeNodeOrientation(ageVBox, langCode);
 		return ageVBox;

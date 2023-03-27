@@ -6,6 +6,7 @@ import static io.mosip.registration.constants.RegistrationConstants.EMPTY;
 import static io.mosip.registration.constants.RegistrationConstants.HASH;
 import static io.mosip.registration.constants.RegistrationConstants.REG_AUTH_PAGE;
 
+
 import java.awt.event.KeyAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,11 +14,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+//import java.util.*;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import io.mosip.commons.packet.dto.packet.SimpleDto;
+import io.mosip.kernel.core.http.RequestWrapper;
 import javafx.scene.Cursor;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -121,6 +124,7 @@ public class GenericController extends BaseController {
 	private static final String CONTROLTYPE_DOB = "date";
 	private static final String CONTROLTYPE_DOB_AGE = "ageDate";
 	private static final String CONTROLTYPE_HTML = "html";
+
 
 	/**
 	 * Top most Grid pane in FXML
@@ -771,11 +775,18 @@ public class GenericController extends BaseController {
 					groupFlowPane.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP);
 					groupFlowPane.setPadding(new Insets(20, 0, 20, 0));
 
+
+					ColumnConstraints leftColumn = new ColumnConstraints();
+					leftColumn.setPercentWidth(50);
+					ColumnConstraints rightColumn = new ColumnConstraints();
+					rightColumn.setPercentWidth(50);
+					groupFlowPane.getColumnConstraints().addAll(leftColumn, rightColumn);
+
 					/* Adding Group label */
 					Label label = new Label(groupEntry.getKey());
 					label.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP_LABEL);
 					label.setPadding(new Insets(0, 0, 0, 55));
-					label.setPrefWidth(1200);
+					//label.setPrefWidth(1200);
 					groupFlowPane.add(label, 0, 0, 2, 1);
 				}
 				int fieldIndex=0;
@@ -818,6 +829,18 @@ public class GenericController extends BaseController {
 			screenTab.setContent(scrollPane);
 			tabPane.getTabs().add(screenTab);
 		}
+
+		//Setting the Default Value
+		/*String langCode = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
+		getRegistrationDTOFromSession().addDemographicField("bloodType", Arrays.asList(new SimpleDto(langCode, "A")));
+		getRegistrationDTOFromSession().addDemographicField("homeless", Arrays.asList(new SimpleDto(langCode, "Yes")));
+		getRegistrationDTOFromSession().addDemographicField("residenceStatus", Arrays.asList(new SimpleDto(langCode, "Non-Foreigner")));
+		getRegistrationDTOFromSession().addDemographicField("state", Arrays.asList(new SimpleDto(langCode, "Karnataka")));
+		getRegistrationDTOFromSession().addDemographicField("city", Arrays.asList(new SimpleDto(langCode, "Bengaluru")));
+		getRegistrationDTOFromSession().addDemographicField("city", Arrays.asList(new SimpleDto(langCode, "BLR"), new SimpleDto("fra", "BLR")));
+		getRegistrationDTOFromSession().addDemographicField("locality", Arrays.asList(new SimpleDto(langCode, "Electronics City")));
+		getRegistrationDTOFromSession().addDemographicField("postalCode","560100");
+		loadDefaultReg();*/
 
 		//refresh to reflect the initial visibility configuration
 		refreshFields();
@@ -970,6 +993,28 @@ public class GenericController extends BaseController {
 
 	public void refreshFields() {
 		orderedScreens.values().forEach(screen -> { refreshScreenVisibility(screen.getName()); });
+	}
+	private void loadDefaultReg() {
+		for (UiScreenDTO screenDTO : orderedScreens.values()) {
+			for (UiFieldDTO field : screenDTO.getFields()) {
+				FxControl fxControl = getFxControl(field.getId());
+				if (fxControl != null) {
+					switch (fxControl.getUiSchemaDTO().getType()) {
+						case "biometricsType":
+							break;
+						case "documentType":
+							fxControl.selectAndSet(getRegistrationDTOFromSession().getDocuments().get(field.getId()));
+							break;
+						default:
+							fxControl.selectAndSet(getRegistrationDTOFromSession().getDemographics().get(field.getId()));
+							//it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
+							//kind of supporting data
+							fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()));
+							break;
+					}
+				}
+			}
+		}
 	}
 	public void handleContinueButton() {
 		TabPane tabPane = (TabPane) anchorPane.lookup(HASH+getRegistrationDTOFromSession().getRegistrationId());
