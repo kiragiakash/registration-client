@@ -45,6 +45,7 @@ public class RegistrationConstants {
 	public static final String PENDING_APPROVAL_PAGE = "/fxml/RegistrationPendingApproval.fxml";
 	public static final String REREGISTRATION_PAGE = "/fxml/ReRegistration.fxml";
 	public static final String SCAN_PAGE = "/fxml/Scan.fxml";
+	public static final String QR_CODE_PAGE = "/fxml/QrCode.fxml";
 	public static final String UIN_UPDATE = "/fxml/UpdateUIN.fxml";
 	public static final String SYNC_DATA = "/fxml/SyncDataProcess.fxml";
 	public static final String USER_ONBOARD = "/fxml/Onboard.fxml";
@@ -138,6 +139,7 @@ public class RegistrationConstants {
 	public static final String VIEW = "/images/View.png";
 	public static final String SCAN = "/images/scan.png";
 	public static final String SCAN_FOCUSED = "/images/scanFocused.png";
+	public static final String QR_CODE = "/images/qr-code.png";
 	public static final String BACK = "/images/arrowLeft.png";
 	public static final String BACK_FOCUSED = "/images/backInWhite.png";
 	public static final String WRONG_IMAGE_PATH = "/images/wrong.png";
