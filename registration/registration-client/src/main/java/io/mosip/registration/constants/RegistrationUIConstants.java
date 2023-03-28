@@ -166,6 +166,7 @@ public class RegistrationUIConstants {
 	public static final String CAPTURING = "CAPTURING";
 	public static final String UNABLE_LOAD_SCAN_POPUP = "UNABLE_LOAD_SCAN_POPUP";
 	public static final String UNABLE_LOAD_QR_SCAN_POPUP = "UNABLE_LOAD_QR_SCAN_POPUP";
+	public static final String NO_DEVICES_DETECTED = "NO_DEVICES_DETECTED";
 	public static final String SCAN_DOC_TITLE = "SCAN_DOC_TITLE";
 	public static final String SCAN_QR_CODE_TITLE = "SCAN_QR_CODE_TITLE";
 	public static final String SCAN_DOC_CATEGORY_MULTIPLE = "SCAN_DOC_CATEGORY_MULTIPLE";

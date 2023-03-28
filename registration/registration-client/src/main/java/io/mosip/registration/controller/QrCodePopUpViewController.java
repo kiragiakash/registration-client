@@ -6,11 +6,14 @@ import com.github.sarxos.webcam.WebcamResolution;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
+import io.mosip.kernel.core.idvalidator.exception.InvalidIDException;
+import io.mosip.kernel.core.idvalidator.spi.PridValidator;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.registration.api.docscanner.DocScannerUtil;
 import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.constants.RegistrationConstants;
 import io.mosip.registration.constants.RegistrationUIConstants;
+import io.mosip.registration.controller.vo.PacketStatusVO;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -20,7 +23,8 @@ import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -33,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
-import java.awt.*;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -42,6 +45,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 
 @Controller
 public class QrCodePopUpViewController extends BaseController implements Initializable, Runnable, ThreadFactory {
@@ -54,6 +58,12 @@ public class QrCodePopUpViewController extends BaseController implements Initial
     @FXML
     private TextField scannedTextField;
 
+    @FXML
+    private ComboBox<String> availableWebcams;
+
+    @FXML
+    private Button doneButton;
+
     @Value("${mosip.doc.stage.width:400}")
     private int width;
 
@@ -62,6 +72,13 @@ public class QrCodePopUpViewController extends BaseController implements Initial
 
     @Autowired
     private GenericController genericController;
+
+    @Autowired
+    private PridValidator<String> pridValidatorImpl;
+
+    public Stage getPopupStage() {
+        return popupStage;
+    }
 
     private Stage popupStage;
 
@@ -73,12 +90,24 @@ public class QrCodePopUpViewController extends BaseController implements Initial
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initWebcam();
+        //Check if there are any cameras connected
+        if (Webcam.getWebcams().isEmpty()) {
+            LOGGER.error(RegistrationConstants.USER_REG_SCAN_EXP);
+            generateAlert(RegistrationConstants.ERROR, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.NO_DEVICES_DETECTED));
+        } else {
+            availableWebcams.getItems().addAll(Webcam.getWebcams().stream().map(s -> s.getName()).collect(Collectors.toList()));
+            availableWebcams.getSelectionModel().select(0);
+            availableWebcams.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+                Webcam oldWebcam = Webcam.getWebcamByName(oldValue);
+                oldWebcam.close();
+                initWebcam(newValue);
+            });
+            initWebcam(availableWebcams.getSelectionModel().getSelectedItem());
+        }
     }
 
     /**
      * This method will open popup to scan
-     *
      *
      * @param title
      */
@@ -93,12 +122,12 @@ public class QrCodePopUpViewController extends BaseController implements Initial
             scene.getStylesheets().add(ClassLoader.getSystemClassLoader().getResource(getCssName()).toExternalForm());
             popupStage = new Stage();
             popupStage.setResizable(true);
+            popupStage.setMaximized(false);
             popupStage.setScene(scene);
             popupStage.initModality(Modality.WINDOW_MODAL);
             popupStage.initOwner(fXComponents.getStage());
             popupStage.setTitle(title);
             popupStage.setOnCloseRequest((e) -> {
-                // saveToDevice.setDisable(false);
                 exitWindow(e);
             });
             popupStage.show();
@@ -112,9 +141,11 @@ public class QrCodePopUpViewController extends BaseController implements Initial
         }
     }
 
-    private void initWebcam() {
+    private void initWebcam(String name) {
+        doneButton.setDisable(true);
+
         Dimension size = WebcamResolution.VGA.getSize();
-        webcam = Webcam.getWebcams().get(0);
+        webcam = Webcam.getWebcamByName(name);
         if (!webcam.isOpen()) {
 
             webcam.setViewSize(size);
@@ -126,7 +157,7 @@ public class QrCodePopUpViewController extends BaseController implements Initial
             final SwingNode swingNode = new SwingNode();
             swingNode.setContent(panel);
 
-            this.captureWindow.getChildren().add(swingNode);
+            captureWindow.getChildren().add(swingNode);
             executor.execute(this);
         }
     }
@@ -149,18 +180,31 @@ public class QrCodePopUpViewController extends BaseController implements Initial
                 }
             }
 
-            LuminanceSource source = new BufferedImageLuminanceSource(image);
-            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
             try {
+                LuminanceSource source = new BufferedImageLuminanceSource(image);
+                BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
                 result = new MultiFormatReader().decode(bitmap);
-            } catch (NotFoundException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                LOGGER.error(RegistrationConstants.USER_REG_SCAN_EXP, e);
+                generateAlertLanguageSpecific(RegistrationConstants.ERROR, RegistrationUIConstants.UNABLE_LOAD_QR_SCAN_POPUP);
             }
 
             if (result != null) {
-                this.scannedTextField.setText(result.getText());
-            }
+                boolean isValid;
+                try {
+                    isValid = pridValidatorImpl.validateId(result.getText());
+                } catch (InvalidIDException invalidIDException) {
+                    isValid = false;
+                }
 
+                if (isValid) {
+                    this.scannedTextField.setText(result.getText());
+                    doneButton.setDisable(false);
+                } else {
+                    generateAlertLanguageSpecific(RegistrationConstants.ERROR, RegistrationUIConstants.PRE_REG_ID_NOT_VALID);
+                }
+            }
         } while (true);
     }
 
@@ -173,7 +217,7 @@ public class QrCodePopUpViewController extends BaseController implements Initial
 
     @FXML
     public void done() {
-        if(this.scannedTextField.getText() != null) {
+        if (this.scannedTextField.getText() != null) {
             this.genericController.getRegistrationNumberTextField().setText(this.scannedTextField.getText());
         }
         stopStreaming();
@@ -199,7 +243,7 @@ public class QrCodePopUpViewController extends BaseController implements Initial
 
     private void stopStreaming() {
         try {
-            if(webcam.isOpen()) {
+            if (webcam.isOpen()) {
                 webcam.close();
             }
         } finally {
