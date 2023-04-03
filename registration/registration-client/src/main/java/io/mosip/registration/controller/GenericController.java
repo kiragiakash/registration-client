@@ -1,36 +1,11 @@
 package io.mosip.registration.controller;
 
-import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
-import static io.mosip.registration.constants.RegistrationConstants.EMPTY;
-import static io.mosip.registration.constants.RegistrationConstants.HASH;
-import static io.mosip.registration.constants.RegistrationConstants.REG_AUTH_PAGE;
-
-import java.awt.event.KeyAdapter;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
 import io.mosip.commons.packet.dto.packet.SimpleDto;
-import javafx.beans.binding.Bindings;
-import javafx.geometry.Insets;
-import javafx.scene.Cursor;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-
 import io.mosip.kernel.core.idvalidator.exception.InvalidIDException;
 import io.mosip.kernel.core.idvalidator.spi.PridValidator;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.registration.config.AppConfig;
-import io.mosip.registration.constants.AuditEvent;
-import io.mosip.registration.constants.AuditReferenceIdTypes;
-import io.mosip.registration.constants.Components;
-import io.mosip.registration.constants.ProcessNames;
-import io.mosip.registration.constants.RegistrationConstants;
-import io.mosip.registration.constants.RegistrationUIConstants;
+import io.mosip.registration.constants.*;
 import io.mosip.registration.context.ApplicationContext;
 import io.mosip.registration.context.SessionContext;
 import io.mosip.registration.controller.auth.AuthenticationController;
@@ -48,16 +23,9 @@ import io.mosip.registration.exception.RegBaseCheckedException;
 import io.mosip.registration.exception.RegistrationExceptionConstants;
 import io.mosip.registration.service.sync.PreRegistrationDataSyncService;
 import io.mosip.registration.util.control.FxControl;
-import io.mosip.registration.util.control.impl.BiometricFxControl;
-import io.mosip.registration.util.control.impl.ButtonFxControl;
-import io.mosip.registration.util.control.impl.CheckBoxFxControl;
-import io.mosip.registration.util.control.impl.DOBAgeFxControl;
-import io.mosip.registration.util.control.impl.DOBFxControl;
-import io.mosip.registration.util.control.impl.DocumentFxControl;
-import io.mosip.registration.util.control.impl.DropDownFxControl;
-import io.mosip.registration.util.control.impl.HtmlFxControl;
-import io.mosip.registration.util.control.impl.TextFieldFxControl;
+import io.mosip.registration.util.control.impl.*;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Service;
@@ -66,27 +34,25 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
-import javax.swing.event.ChangeEvent;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static io.mosip.registration.constants.RegistrationConstants.*;
 
 /**
  * {@code GenericController} is to capture the demographic/demo/Biometric
@@ -139,6 +105,8 @@ public class GenericController extends BaseController {
 	
 	private ProgressIndicator progressIndicator;
 
+	private TextField registrationNumberTextField;
+
 	@Autowired
 	private AuthenticationController authenticationController;
 
@@ -153,7 +121,10 @@ public class GenericController extends BaseController {
 
 	@Autowired
 	private PreRegistrationDataSyncService preRegistrationDataSyncService;
-	
+
+	@Autowired
+	private QrCodePopUpViewController qrCodePopUpViewController;
+
 	private static TreeMap<Integer, UiScreenDTO> orderedScreens = new TreeMap<>();
 	private static Map<String, FxControl> fxControlMap = new HashMap<String, FxControl>();
 	private Stage keyboardStage;
@@ -167,7 +138,11 @@ public class GenericController extends BaseController {
 	public static Map<String, FxControl> getFxControlMap() {
 		return fxControlMap;
 	}
-	
+
+	public TextField getRegistrationNumberTextField() {
+		return registrationNumberTextField;
+	}
+
 	public void disableAuthenticateButton(boolean disable) {
 		authenticate.setDisable(disable);
 	}
@@ -203,7 +178,6 @@ public class GenericController extends BaseController {
 		hBox.setAlignment(Pos.CENTER_LEFT);
 		hBox.setSpacing(20);
 		hBox.setPrefHeight(100);
-		hBox.setPrefWidth(200);
 		hBox.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP);
 		hBox.setPadding(new Insets(20, 0, 20, 0));
 
@@ -214,12 +188,18 @@ public class GenericController extends BaseController {
 				.getString("search_for_Pre_registration_id"));
 		label.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP_LABEL);
 		label.setPadding(new Insets(0, 0, 0, 55));
-
 		hBox.getChildren().add(label);
+
+		HBox innerHBox = new HBox();
+		innerHBox.setAlignment(Pos.CENTER_LEFT);
+		innerHBox.setSpacing(0);
+		innerHBox.setPrefHeight(100);
+
 		TextField textField = new TextField();
 		textField.setId("preRegistrationId");
 		textField.getStyleClass().add(TEXTFIELD_CLASS);
-		hBox.getChildren().add(textField);
+		this.registrationNumberTextField = textField;
+
 		Button button = new Button();
 		button.setId("fetchBtn");
 		button.getStyleClass().add("demoGraphicPaneContentButton");
@@ -230,12 +210,71 @@ public class GenericController extends BaseController {
 			executePreRegFetchTask(textField);
 		});
 
+		if(RegistrationConstants.ENABLE.equalsIgnoreCase((String) ApplicationContext.map()
+				.getOrDefault(RegistrationConstants.REGCLIENT_QR_CODE_SCAN_ENABLE, RegistrationConstants.ENABLE))) {
+			Button scanQRbutton = new Button();
+			scanQRbutton.setId("scanQRBtn");
+			scanQRbutton.setGraphic(new ImageView(
+					new Image(this.getClass().getResourceAsStream(RegistrationConstants.QR_CODE), 25, 25, true, true)));
+			scanQRbutton.getStyleClass().add("demoGraphicPaneContentButton");
+			scanQRbutton.setOnAction(event -> {
+				executeQRCodeScan();
+			});
+
+			innerHBox.getChildren().add(scanQRbutton);
+		}
+
+		innerHBox.getChildren().add(textField);
+
+		hBox.getChildren().add(innerHBox);
 		hBox.getChildren().add(button);
+
+
 		progressIndicator = new ProgressIndicator();
 		progressIndicator.setId("progressIndicator");
 		progressIndicator.setVisible(false);
 		hBox.getChildren().add(progressIndicator);
 		return hBox;
+	}
+
+	private void executeQRCodeScan() {
+		genericScreen.setDisable(true);
+
+		Service<Void> taskService = new Service<Void>() {
+			@Override
+			protected Task<Void> createTask() {
+				return new Task<Void>() {
+					/*
+					 * (non-Javadoc)
+					 *
+					 * @see javafx.concurrent.Task#call()
+					 */
+					@Override
+					protected Void call() {
+						Platform.runLater(() -> {
+							qrCodePopUpViewController.init(RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.SCAN_QR_CODE_TITLE));
+						});
+						return null;
+					}
+				};
+			}
+		};
+
+		taskService.start();
+		taskService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent workerStateEvent) {
+				genericScreen.setDisable(false);
+			}
+		});
+		taskService.setOnFailed(new EventHandler<WorkerStateEvent>() {
+			@Override
+			public void handle(WorkerStateEvent t) {
+				LOGGER.debug("QR code scan failed");
+				genericScreen.setDisable(false);
+			}
+		});
+
 	}
 
 	private void executePreRegFetchTask(TextField textField) {
