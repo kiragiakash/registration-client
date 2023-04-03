@@ -230,16 +230,20 @@ public class GenericController extends BaseController {
             executePreRegFetchTask(textField);
         });
 
-        Button scanQRbutton = new Button();
-        scanQRbutton.setId("scanQRBtn");
-        scanQRbutton.setGraphic(new ImageView(
-                new Image(this.getClass().getResourceAsStream(RegistrationConstants.QR_CODE), 25, 25, true, true)));
-        scanQRbutton.getStyleClass().add("demoGraphicPaneContentButton");
-        scanQRbutton.setOnAction(event -> {
-            executeQRCodeScan();
-        });
+        if(RegistrationConstants.ENABLE.equalsIgnoreCase((String) ApplicationContext.map()
+                .getOrDefault(RegistrationConstants.REGCLIENT_QR_CODE_SCAN_ENABLE, RegistrationConstants.ENABLE))) {
+            Button scanQRbutton = new Button();
+            scanQRbutton.setId("scanQRBtn");
+            scanQRbutton.setGraphic(new ImageView(
+                    new Image(this.getClass().getResourceAsStream(RegistrationConstants.QR_CODE), 25, 25, true, true)));
+            scanQRbutton.getStyleClass().add("demoGraphicPaneContentButton");
+            scanQRbutton.setOnAction(event -> {
+                executeQRCodeScan();
+            });
 
-        innerHBox.getChildren().add(scanQRbutton);
+            innerHBox.getChildren().add(scanQRbutton);
+        }
+
         innerHBox.getChildren().add(textField);
 
         hBox.getChildren().add(innerHBox);

@@ -9,26 +9,17 @@ import com.google.zxing.common.HybridBinarizer;
 import io.mosip.kernel.core.idvalidator.exception.InvalidIDException;
 import io.mosip.kernel.core.idvalidator.spi.PridValidator;
 import io.mosip.kernel.core.logger.spi.Logger;
-import io.mosip.registration.api.docscanner.DocScannerUtil;
 import io.mosip.registration.config.AppConfig;
 import io.mosip.registration.constants.RegistrationConstants;
 import io.mosip.registration.constants.RegistrationUIConstants;
-import io.mosip.registration.controller.vo.PacketStatusVO;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -42,7 +33,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
@@ -56,13 +47,7 @@ public class QrCodePopUpViewController extends BaseController implements Initial
     private GridPane captureWindow;
 
     @FXML
-    private TextField scannedTextField;
-
-    @FXML
     private ComboBox<String> availableWebcams;
-
-    @FXML
-    private Button doneButton;
 
     @Value("${mosip.doc.stage.width:400}")
     private int width;
@@ -75,18 +60,14 @@ public class QrCodePopUpViewController extends BaseController implements Initial
 
     @Autowired
     private PridValidator<String> pridValidatorImpl;
+    private Stage popupStage;
+    private WebcamPanel panel = null;
+    private Webcam webcam = null;
+    private ExecutorService executor = Executors.newSingleThreadExecutor(this);
 
     public Stage getPopupStage() {
         return popupStage;
     }
-
-    private Stage popupStage;
-
-    private WebcamPanel panel = null;
-
-    private Webcam webcam = null;
-
-    private Executor executor = Executors.newSingleThreadExecutor(this);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -98,9 +79,11 @@ public class QrCodePopUpViewController extends BaseController implements Initial
             availableWebcams.getItems().addAll(Webcam.getWebcams().stream().map(s -> s.getName()).collect(Collectors.toList()));
             availableWebcams.getSelectionModel().select(0);
             availableWebcams.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-                Webcam oldWebcam = Webcam.getWebcamByName(oldValue);
-                oldWebcam.close();
-                initWebcam(newValue);
+                Platform.runLater(() -> {
+                    Webcam oldWebcam = Webcam.getWebcamByName(oldValue);
+                    oldWebcam.close();
+                    initWebcam(newValue);
+                });
             });
             initWebcam(availableWebcams.getSelectionModel().getSelectedItem());
         }
@@ -142,10 +125,9 @@ public class QrCodePopUpViewController extends BaseController implements Initial
     }
 
     private void initWebcam(String name) {
-        doneButton.setDisable(true);
-
         Dimension size = WebcamResolution.VGA.getSize();
         webcam = Webcam.getWebcamByName(name);
+        LOGGER.info("Setting webcam image size for QR Code");
         if (!webcam.isOpen()) {
 
             webcam.setViewSize(size);
@@ -166,9 +148,9 @@ public class QrCodePopUpViewController extends BaseController implements Initial
     public void run() {
         do {
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                LOGGER.error(RegistrationConstants.USER_REG_SCAN_EXP, ex);
             }
 
             Result result = null;
@@ -178,16 +160,20 @@ public class QrCodePopUpViewController extends BaseController implements Initial
                 if ((image = webcam.getImage()) == null) {
                     continue;
                 }
+            } else {
+                continue;
             }
 
-            try {
-                LuminanceSource source = new BufferedImageLuminanceSource(image);
-                BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+            LuminanceSource source = new BufferedImageLuminanceSource(image);
+            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
+            try {
                 result = new MultiFormatReader().decode(bitmap);
+            } catch (NotFoundException nfe) {
+                LOGGER.info("Valid QR Code not found");
             } catch (Exception e) {
                 LOGGER.error(RegistrationConstants.USER_REG_SCAN_EXP, e);
-                generateAlertLanguageSpecific(RegistrationConstants.ERROR, RegistrationUIConstants.UNABLE_LOAD_QR_SCAN_POPUP);
+                generateAlertLanguageSpecific(RegistrationConstants.ERROR, RegistrationUIConstants.ERROR_DECODING_QR_CODE);
             }
 
             if (result != null) {
@@ -199,10 +185,10 @@ public class QrCodePopUpViewController extends BaseController implements Initial
                 }
 
                 if (isValid) {
-                    this.scannedTextField.setText(result.getText());
-                    doneButton.setDisable(false);
+                    Result finalResult = result;
+                    Platform.runLater(() -> close(finalResult.getText()));
                 } else {
-                    generateAlertLanguageSpecific(RegistrationConstants.ERROR, RegistrationUIConstants.PRE_REG_ID_NOT_VALID);
+                    Platform.runLater(() -> generateAlertLanguageSpecific(RegistrationConstants.ERROR, RegistrationUIConstants.PRE_REG_ID_NOT_VALID));
                 }
             }
         } while (true);
@@ -215,13 +201,12 @@ public class QrCodePopUpViewController extends BaseController implements Initial
         return t;
     }
 
-    @FXML
-    public void done() {
-        if (this.scannedTextField.getText() != null) {
-            this.genericController.getRegistrationNumberTextField().setText(this.scannedTextField.getText());
+    private void close(String registrationNumber) {
+        if (registrationNumber != null) {
+            this.genericController.getRegistrationNumberTextField().setText(registrationNumber);
         }
+        Thread.currentThread().interrupt();
         stopStreaming();
-        clearSelection();
         popupStage.close();
         generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.QR_CODE_SCAN_SUCCESS));
         LOGGER.debug("Scanning QR code completed");
@@ -235,7 +220,6 @@ public class QrCodePopUpViewController extends BaseController implements Initial
     public void exitWindow(WindowEvent event) {
         LOGGER.info("Calling exit window to close the popup");
         stopStreaming();
-        clearSelection();
         popupStage.close();
 
         LOGGER.info("Scan Popup is closed");
@@ -249,9 +233,5 @@ public class QrCodePopUpViewController extends BaseController implements Initial
         } finally {
             webcam.close();
         }
-    }
-
-    private void clearSelection() {
-        this.scannedTextField.setText(null);
     }
 }

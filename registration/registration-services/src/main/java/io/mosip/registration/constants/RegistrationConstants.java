@@ -855,6 +855,7 @@ public class RegistrationConstants {
 	public static final String DISK_SPACE = "mosip.registration.disk_space_size";
 	public static final String LAST_SOFTWARE_UPDATE = "mosip.registration.last_software_update";
 	public static final String REGCLIENT_INSTALLED_TIME = "mosip.registration.regclient_installed_time";
+	public static final String REGCLIENT_QR_CODE_SCAN_ENABLE = "mosip.registration.qr_code.scan_enable_flag";
 
 	// Spring Batch-Jobs
 	public static final String JOB_TRIGGER_STARTED = "Trigger started";
