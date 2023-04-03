@@ -176,6 +176,9 @@ public class BaseController {
 	private ScanPopUpViewController scanPopUpViewController;
 
 	@Autowired
+	private QrCodePopUpViewController qrCodePopUpViewController;
+
+	@Autowired
 	private RegistrationApprovalController registrationApprovalController;
 
 	@Autowired
@@ -386,6 +389,10 @@ public class BaseController {
 			} else if (registrationApprovalController.getPrimaryStage() != null
 					&& registrationApprovalController.getPrimaryStage().isShowing()) {
 				alertStage.initOwner(registrationApprovalController.getPrimaryStage());
+				alertTypeCheck(title, context, alertStage);
+			} else if (qrCodePopUpViewController.getPopupStage() != null
+					&& qrCodePopUpViewController.getPopupStage().isShowing()) {
+				alertStage.initOwner(qrCodePopUpViewController.getPopupStage());
 				alertTypeCheck(title, context, alertStage);
 			} else {
 				alertStage.initOwner(fXComponents.getStage());

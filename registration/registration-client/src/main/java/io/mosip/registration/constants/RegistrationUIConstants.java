@@ -165,10 +165,15 @@ public class RegistrationUIConstants {
 	public static final String SEARCHING_DEVICE_MESSAGE = "SEARCHING_DEVICE_MESSAGE";
 	public static final String CAPTURING = "CAPTURING";
 	public static final String UNABLE_LOAD_SCAN_POPUP = "UNABLE_LOAD_SCAN_POPUP";
+	public static final String UNABLE_LOAD_QR_SCAN_POPUP = "UNABLE_LOAD_QR_SCAN_POPUP";
+	public static final String ERROR_DECODING_QR_CODE = "ERROR_DECODING_QR_CODE";
+	public static final String NO_DEVICES_DETECTED = "NO_DEVICES_DETECTED";
 	public static final String SCAN_DOC_TITLE = "SCAN_DOC_TITLE";
+	public static final String SCAN_QR_CODE_TITLE = "SCAN_QR_CODE_TITLE";
 	public static final String SCAN_DOC_CATEGORY_MULTIPLE = "SCAN_DOC_CATEGORY_MULTIPLE";
 	public static final String SCAN_DOC_SUCCESS = "SCAN_DOC_SUCCESS";
 	public static final String CROP_DOC_SUCCESS = "CROP_DOC_SUCCESS";
+	public static final String QR_CODE_SCAN_SUCCESS = "QR_CODE_SCAN_SUCCESS";
 	public static final String SCAN_DOC_SIZE = "SCAN_DOC_SIZE";
 	public static final String SCAN_DOC_INFO = "SCAN_DOC_INFO";
 	public static final String SELECTED_SCANNER = "SELECTED_SCANNER";
