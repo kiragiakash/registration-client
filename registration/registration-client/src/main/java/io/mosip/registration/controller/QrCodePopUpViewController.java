@@ -203,7 +203,8 @@ public class QrCodePopUpViewController extends BaseController implements Initial
 
     private void close(String registrationNumber) {
         if (registrationNumber != null) {
-            this.genericController.getRegistrationNumberTextField().setText(registrationNumber);
+            genericController.getRegistrationNumberTextField().setText(registrationNumber);
+            genericController.executePreRegFetchTask(genericController.getRegistrationNumberTextField());
         }
         Thread.currentThread().interrupt();
         stopStreaming();
