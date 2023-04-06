@@ -2,6 +2,7 @@ package io.mosip.registration.dto.schema;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -40,6 +41,7 @@ public class UiFieldDTO {
 	private List<Validator> validators;
 	private String fieldCategory;
 	private String alignmentGroup;
+	private HashMap<String, String> alignmentGroupLabel;
 	private RequiredOnExpr visible;
 	@JsonProperty("required")
 	private boolean isRequired;
@@ -70,5 +72,4 @@ public class UiFieldDTO {
 		return isExceptionPhotoRequired ||
 				(subType != null && RegistrationConstants.APPLICANT.equalsIgnoreCase(subType));
 	}
-
 }

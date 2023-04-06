@@ -8,17 +8,11 @@ import static io.mosip.registration.constants.RegistrationConstants.REG_AUTH_PAG
 
 
 import java.awt.event.KeyAdapter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 //import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
+
 import io.mosip.commons.packet.dto.packet.SimpleDto;
 import io.mosip.kernel.core.http.RequestWrapper;
 import javafx.scene.Cursor;
@@ -107,7 +101,7 @@ import javax.swing.event.ChangeEvent;
  */
 
 @Controller
-public class GenericController extends BaseController {
+public class GenericController<uiFieldDTO> extends BaseController {
 
 	protected static final Logger LOGGER = AppConfig.getLogger(GenericController.class);
 
@@ -173,6 +167,9 @@ public class GenericController extends BaseController {
 	public static Map<String, TreeMap<Integer, String>> hierarchyLevels = new HashMap<String, TreeMap<Integer, String>>();
 	public static Map<String, TreeMap<Integer, String>> currentHierarchyMap = new HashMap<String, TreeMap<Integer, String>>();
 	public static List<UiFieldDTO> fields = new ArrayList<>();
+
+	public GenericController() {
+	}
 
 	public static Map<String, FxControl> getFxControlMap() {
 		return fxControlMap;
@@ -415,7 +412,7 @@ public class GenericController extends BaseController {
 		});
 	}
 
-	private Map<String, List<UiFieldDTO>> getFieldsBasedOnAlignmentGroup(List<UiFieldDTO> screenFields) {
+	private <uiFieldDTO> Map<String, List<UiFieldDTO>> getFieldsBasedOnAlignmentGroup(List<UiFieldDTO> screenFields) {
 		Map<String, List<UiFieldDTO>> groupedScreenFields = new LinkedHashMap<>();
 		if(screenFields == null || screenFields.isEmpty())
 			return groupedScreenFields;
@@ -430,15 +427,20 @@ public class GenericController extends BaseController {
 		}
 
 		screenFields.forEach( field -> {
-				String alignmentGroup = field.getAlignmentGroup() == null ? field.getId()+"TemplateGroup"
-						: field.getAlignmentGroup();
+			List<String> labels = new ArrayList<>();
+			getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().forEach(lCode -> {
+				if(field.getAlignmentGroupLabel() != null)
+					labels.add(field.getAlignmentGroupLabel().get(lCode));
+			});
+			String titleText = String.join(RegistrationConstants.SLASH, labels);
+			String alignmentGroup = field.getAlignmentGroup() == null ? field.getId()+"TemplateGroup" : titleText;
 
-				if(field.isInputRequired()) {
-					if(!groupedScreenFields.containsKey(alignmentGroup))
-						groupedScreenFields.put(alignmentGroup, new LinkedList<UiFieldDTO>());
+			if(field.isInputRequired()) {
+				if(!groupedScreenFields.containsKey(alignmentGroup))
+					groupedScreenFields.put(alignmentGroup, new LinkedList<UiFieldDTO>());
 
-					groupedScreenFields.get(alignmentGroup).add(field);
-				}
+				groupedScreenFields.get(alignmentGroup).add(field);
+			}
 		});
 		return groupedScreenFields;
 	}
@@ -738,17 +740,18 @@ public class GenericController extends BaseController {
 			getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().forEach(langCode -> {
 				labels.add(screenDTO.getLabel().get(langCode));
 			});
-
 			String tabNameInApplicationLanguage = screenDTO.getLabel().get(getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0));
-			
+
 			if(screenFieldGroups == null || screenFieldGroups.isEmpty())
 				continue;
-			
+
 			Tab screenTab = new Tab();
 			screenTab.setId(screenDTO.getName()+"_tab");
 			screenTab.setText(tabNameInApplicationLanguage == null ?
 					labels.get(0) : tabNameInApplicationLanguage);
 			screenTab.setTooltip(new Tooltip(String.join(RegistrationConstants.SLASH, labels)));
+
+
 
 			GridPane screenGridPane = getScreenGridPane(screenDTO.getName());
 			screenGridPane.prefWidthProperty().bind(tabPane.widthProperty());
