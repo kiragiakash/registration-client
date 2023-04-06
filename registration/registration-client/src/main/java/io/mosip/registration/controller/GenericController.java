@@ -217,8 +217,13 @@ public class GenericController<uiFieldDTO> extends BaseController {
 		Label label = new Label();
 		label.getStyleClass().add(LABEL_CLASS);
 		label.setId("preRegistrationLabel");
-		label.setText(ApplicationContext.getBundle(langCode, RegistrationConstants.LABELS)
-				.getString("search_for_Pre_registration_id"));
+		List<String> labels = new ArrayList<>();
+		getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().forEach(lCode -> {
+			labels.add(ApplicationContext.getBundle(lCode, RegistrationConstants.LABELS)
+					.getString("search_for_Pre_registration_id"));
+		});
+		String labelText = String.join(RegistrationConstants.SLASH, labels);
+		label.setText(labelText);
 		label.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP_LABEL);
 		label.setPadding(new Insets(0, 0, 0, 55));
 		hBox.getChildren().add(label);
