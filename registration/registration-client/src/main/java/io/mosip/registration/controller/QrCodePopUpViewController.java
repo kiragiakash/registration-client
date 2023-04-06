@@ -202,11 +202,14 @@ public class QrCodePopUpViewController extends BaseController implements Initial
     }
 
     private void close(String registrationNumber) {
+        LOGGER.info("Start closing QR code popup dialog");
         if (registrationNumber != null) {
             genericController.getRegistrationNumberTextField().setText(registrationNumber);
+            LOGGER.info("Execute pre-registration packet fetching");
             genericController.executePreRegFetchTask(genericController.getRegistrationNumberTextField());
         }
         Thread.currentThread().interrupt();
+        LOGGER.info("Stop the webcam stream");
         stopStreaming();
         popupStage.close();
         generateAlert(RegistrationConstants.ALERT_INFORMATION, RegistrationUIConstants.getMessageLanguageSpecific(RegistrationUIConstants.QR_CODE_SCAN_SUCCESS));
