@@ -148,8 +148,8 @@ public class LanguageSelectionController extends BaseController implements Initi
 						}
 					});
 				}
-				if (language.getCode().equalsIgnoreCase(ApplicationContext.applicationLanguage())) {
-					checkBox.setSelected(true); //Pre-selecting application language. Can be de-selected if it is not mandatory.
+				if (language.getCode().equalsIgnoreCase(ApplicationContext.applicationLanguage()) || mandatoryLangCodes.contains(language.getCode())) {
+					checkBox.setSelected(true);
 				}
 				checkBoxesPane.getChildren().add(checkBox);
 			}

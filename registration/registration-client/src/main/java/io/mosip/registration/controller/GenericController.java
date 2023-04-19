@@ -64,7 +64,7 @@ import static io.mosip.registration.constants.RegistrationConstants.*;
  */
 
 @Controller
-public class GenericController extends BaseController {
+public class GenericController<uiFieldDTO> extends BaseController {
 
 	protected static final Logger LOGGER = AppConfig.getLogger(GenericController.class);
 
@@ -135,6 +135,9 @@ public class GenericController extends BaseController {
 	public static Map<String, TreeMap<Integer, String>> currentHierarchyMap = new HashMap<String, TreeMap<Integer, String>>();
 	public static List<UiFieldDTO> fields = new ArrayList<>();
 
+	public GenericController() {
+	}
+
 	public static Map<String, FxControl> getFxControlMap() {
 		return fxControlMap;
 	}
@@ -184,8 +187,13 @@ public class GenericController extends BaseController {
 		Label label = new Label();
 		label.getStyleClass().add(LABEL_CLASS);
 		label.setId("preRegistrationLabel");
-		label.setText(ApplicationContext.getBundle(langCode, RegistrationConstants.LABELS)
-				.getString("search_for_Pre_registration_id"));
+		List<String> labels = new ArrayList<>();
+		getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().forEach(lCode -> {
+			labels.add(ApplicationContext.getBundle(lCode, RegistrationConstants.LABELS)
+					.getString("search_for_Pre_registration_id"));
+		});
+		String labelText = String.join(RegistrationConstants.SLASH, labels);
+		label.setText(labelText);
 		label.getStyleClass().add(RegistrationConstants.DEMOGRAPHIC_GROUP_LABEL);
 		label.setPadding(new Insets(0, 0, 0, 55));
 		hBox.getChildren().add(label);
@@ -445,7 +453,7 @@ public class GenericController extends BaseController {
 		});
 	}
 
-	private Map<String, List<UiFieldDTO>> getFieldsBasedOnAlignmentGroup(List<UiFieldDTO> screenFields) {
+	private <uiFieldDTO> Map<String, List<UiFieldDTO>> getFieldsBasedOnAlignmentGroup(List<UiFieldDTO> screenFields) {
 		Map<String, List<UiFieldDTO>> groupedScreenFields = new LinkedHashMap<>();
 		if(screenFields == null || screenFields.isEmpty())
 			return groupedScreenFields;
@@ -460,15 +468,20 @@ public class GenericController extends BaseController {
 		}
 
 		screenFields.forEach( field -> {
-				String alignmentGroup = field.getAlignmentGroup() == null ? field.getId()+"TemplateGroup"
-						: field.getAlignmentGroup();
+			List<String> labels = new ArrayList<>();
+			getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().forEach(lCode -> {
+				if(field.getAlignmentGroupLabel() != null)
+					labels.add(field.getAlignmentGroupLabel().get(lCode));
+			});
+			String titleText = String.join(RegistrationConstants.SLASH, labels);
+			String alignmentGroup = field.getAlignmentGroup() == null ? field.getId()+"TemplateGroup" : titleText;
 
-				if(field.isInputRequired()) {
-					if(!groupedScreenFields.containsKey(alignmentGroup))
-						groupedScreenFields.put(alignmentGroup, new LinkedList<UiFieldDTO>());
+			if(field.isInputRequired()) {
+				if(!groupedScreenFields.containsKey(alignmentGroup))
+					groupedScreenFields.put(alignmentGroup, new LinkedList<UiFieldDTO>());
 
-					groupedScreenFields.get(alignmentGroup).add(field);
-				}
+				groupedScreenFields.get(alignmentGroup).add(field);
+			}
 		});
 		return groupedScreenFields;
 	}
@@ -770,15 +783,17 @@ public class GenericController extends BaseController {
 			});
 
 			String tabNameInApplicationLanguage = screenDTO.getLabel().get(getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0));
-			
+
 			if(screenFieldGroups == null || screenFieldGroups.isEmpty())
 				continue;
-			
+
 			Tab screenTab = new Tab();
 			screenTab.setId(screenDTO.getName()+"_tab");
 			screenTab.setText(tabNameInApplicationLanguage == null ?
 					labels.get(0) : tabNameInApplicationLanguage);
 			screenTab.setTooltip(new Tooltip(String.join(RegistrationConstants.SLASH, labels)));
+
+
 
 			GridPane screenGridPane = getScreenGridPane(screenDTO.getName());
 			screenGridPane.prefWidthProperty().bind(tabPane.widthProperty());
@@ -858,15 +873,17 @@ public class GenericController extends BaseController {
 			tabPane.getTabs().add(screenTab);
 		}
 
-		//TO BE REMOVED
-		String langCode = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
+		//Setting the Default Value
+		/*String langCode = getRegistrationDTOFromSession().getSelectedLanguagesByApplicant().get(0);
 		getRegistrationDTOFromSession().addDemographicField("bloodType", Arrays.asList(new SimpleDto(langCode, "A")));
 		getRegistrationDTOFromSession().addDemographicField("homeless", Arrays.asList(new SimpleDto(langCode, "Yes")));
 		getRegistrationDTOFromSession().addDemographicField("residenceStatus", Arrays.asList(new SimpleDto(langCode, "Non-Foreigner")));
 		getRegistrationDTOFromSession().addDemographicField("state", Arrays.asList(new SimpleDto(langCode, "Karnataka")));
 		getRegistrationDTOFromSession().addDemographicField("city", Arrays.asList(new SimpleDto(langCode, "Bengaluru")));
+		getRegistrationDTOFromSession().addDemographicField("city", Arrays.asList(new SimpleDto(langCode, "BLR"), new SimpleDto("fra", "BLR")));
 		getRegistrationDTOFromSession().addDemographicField("locality", Arrays.asList(new SimpleDto(langCode, "Electronics City")));
-		getRegistrationDTOFromSession().addDemographicField("postalCode", "123");
+		getRegistrationDTOFromSession().addDemographicField("postalCode","560100");
+		loadDefaultReg();*/
 
 		//refresh to reflect the initial visibility configuration
 		refreshFields();
@@ -1013,15 +1030,35 @@ public class GenericController extends BaseController {
 		fxControlMap.put(uiFieldDTO.getId(), fxControl);
 
 		fxControl.getNode().addEventHandler(MouseEvent.MOUSE_EXITED, event ->
-			handleContinueButton());
-
+				handleContinueButton());
 		return fxControl;
 	}
 
 	public void refreshFields() {
 		orderedScreens.values().forEach(screen -> { refreshScreenVisibility(screen.getName()); });
 	}
-
+	/*private void loadDefaultReg() {
+		for (UiScreenDTO screenDTO : orderedScreens.values()) {
+			for (UiFieldDTO field : screenDTO.getFields()) {
+				FxControl fxControl = getFxControl(field.getId());
+				if (fxControl != null) {
+					switch (fxControl.getUiSchemaDTO().getType()) {
+						case "biometricsType":
+							break;
+						case "documentType":
+							fxControl.selectAndSet(getRegistrationDTOFromSession().getDocuments().get(field.getId()));
+							break;
+						default:
+							fxControl.selectAndSet(getRegistrationDTOFromSession().getDemographics().get(field.getId()));
+							//it will read data from field components and set it in registrationDTO along with selectedCodes and ageGroups
+							//kind of supporting data
+							fxControl.setData(getRegistrationDTOFromSession().getDemographics().get(field.getId()));
+							break;
+					}
+				}
+			}
+		}
+	}*/
 	public void handleContinueButton() {
 		TabPane tabPane = (TabPane) anchorPane.lookup(HASH+getRegistrationDTOFromSession().getRegistrationId());
 		int selectedIndex = tabPane.getSelectionModel().getSelectedIndex();
@@ -1041,6 +1078,7 @@ public class GenericController extends BaseController {
 			this.next.setDisable(!isValid);
 		}
 	}
+
 
 	/*public List<UiFieldDTO> getProofOfExceptionFields() {
 		return fields.stream().filter(field ->
