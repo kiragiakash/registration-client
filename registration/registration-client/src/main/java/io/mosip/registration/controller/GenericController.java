@@ -324,7 +324,7 @@ public class GenericController<uiFieldDTO> extends BaseController {
 
     }
 
-    private void executePreRegFetchTask(TextField textField) {
+    protected void executePreRegFetchTask(TextField textField) {
         genericScreen.setDisable(true);
         progressIndicator.setVisible(true);
 
