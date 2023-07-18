@@ -188,7 +188,7 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 				mdmRequestDto.setExceptions(getExceptions(mdmRequestDto.getExceptions()));
 			}
 
-			int count = getCount(getDefaultCount(mdmRequestDto.getModality()),
+			int count = getCount(mdmRequestDto.getModality(), getDefaultCount(mdmRequestDto.getModality()),
 					mdmRequestDto.getExceptions() != null ? mdmRequestDto.getExceptions().length : 0);
 			mdmRequestDto.setCount(count);
 
@@ -206,7 +206,7 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 
 			LOGGER.info(loggerClassName, APPLICATION_NAME, APPLICATION_ID,
 					"Request completed.... " + System.currentTimeMillis());
-			
+
 			RCaptureResponseDTO captureResponse = objectMapper.readValue(val.getBytes(StandardCharsets.UTF_8),
 					RCaptureResponseDTO.class);
 
@@ -240,7 +240,7 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 
 					LOGGER.info(loggerClassName, APPLICATION_NAME, APPLICATION_ID,
 							"Parsed decoded payload" + System.currentTimeMillis());
-					
+
 					mosipDeviceSpecificationHelper.validateResponseTimestamp(dataDTO.getTimestamp());
 
 					mosipDeviceSpecificationHelper.validateQualityScore(dataDTO.getQualityScore());
@@ -253,7 +253,7 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 								RegistrationExceptionConstants.MDS_RCAPTURE_ERROR.getErrorCode(),
 								" RCapture TransactionId Mismatch " );
 					}
-					
+
 					if (rCaptureResponseBiometricsDTO.getSpecVersion() == null || !rCaptureResponseBiometricsDTO
 							.getSpecVersion().equalsIgnoreCase(rCaptureRequestDTO.getSpecVersion())) {
 						throw new RegBaseCheckedException(
@@ -339,8 +339,8 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 
 		return modality.contains("left") ? "1"
 				: modality.contains("right") ? "2"
-						: (modality.contains("double") || modality.contains("thumbs") || modality.contains("two")) ? "3"
-								: "0";
+				: (modality.contains("double") || modality.contains("thumbs") || modality.contains("two")) ? "3"
+				: "0";
 	}
 
 	private MdmBioDevice getBioDevice(MdmDeviceInfo deviceInfo)
@@ -388,28 +388,28 @@ public class MosipDeviceSpecification_095_ProviderImpl implements MosipDeviceSpe
 		int defaultCount = 1;
 		if (modality != null) {
 			switch (modality) {
-			case RegistrationConstants.FACE_FULLFACE:
-				defaultCount = 1;
-				break;
-			case RegistrationConstants.IRIS_DOUBLE:
-				defaultCount = 2;
-				break;
-			case RegistrationConstants.FINGERPRINT_SLAB_RIGHT:
-				defaultCount = 4;
-				break;
-			case RegistrationConstants.FINGERPRINT_SLAB_LEFT:
-				defaultCount = 4;
-				break;
-			case RegistrationConstants.FINGERPRINT_SLAB_THUMBS:
-				defaultCount = 2;
-				break;
+				case RegistrationConstants.FACE_FULLFACE:
+					defaultCount = 1;
+					break;
+				case RegistrationConstants.IRIS_DOUBLE:
+					defaultCount = 2;
+					break;
+				case RegistrationConstants.FINGERPRINT_SLAB_RIGHT:
+					defaultCount = 4;
+					break;
+				case RegistrationConstants.FINGERPRINT_SLAB_LEFT:
+					defaultCount = 4;
+					break;
+				case RegistrationConstants.FINGERPRINT_SLAB_THUMBS:
+					defaultCount = 2;
+					break;
 			}
 		}
 		return defaultCount;
 	}
 
-	private int getCount(int defaultCount, int exceptionsCount) {
-		return defaultCount - exceptionsCount;
+	private int getCount(String modality, int defaultCount, int exceptionsCount) {
+		return RegistrationConstants.FACE_FULLFACE.equalsIgnoreCase(modality) ? 1 : (defaultCount - exceptionsCount);
 	}
 
 	@Counted(recordFailuresOnly = true, extraTags = {"version", "0.9.5"})
