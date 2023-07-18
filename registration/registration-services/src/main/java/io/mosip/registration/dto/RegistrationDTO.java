@@ -58,12 +58,14 @@ public class RegistrationDTO {
 	private boolean isUpdateUINNonBiometric;
 	private boolean isNameNotUpdated;
 	private List<String> defaultUpdatableFieldGroups;
+	private Integer selectedFaceAttempt;
 
 	private Map<String, Object> demographics = new HashMap<>();
 	private Map<String, Object> defaultDemographics = new LinkedHashMap<>();
 	private Map<String, DocumentDto> documents = new HashMap<>();
 	private Map<String, BiometricsDto> biometrics = new HashMap<>();
 	private Map<String, BiometricsException> biometricExceptions = new HashMap<>();
+	private Map<String, BiometricsDto> faceBiometrics = new HashMap<>();
 
 	private List<BiometricsDto> supervisorBiometrics = new ArrayList<>();
 	private List<BiometricsDto> officerBiometrics = new ArrayList<>();
@@ -76,6 +78,7 @@ public class RegistrationDTO {
 	// Caches
 	public Map<String, byte[]> BIO_CAPTURES = new HashMap<>();
 	public Map<String, Double> BIO_SCORES = new HashMap<>();
+	public Map<String, Double> SDK_SCORES = new HashMap<>();
 	public Map<String, Object> AGE_GROUPS = new HashMap<>();
 	public Map<String, Integer> ATTEMPTS = new HashMap<>();
 	public Map<String, List<String>> CONFIGURED_BIOATTRIBUTES = new HashMap<>();
@@ -88,8 +91,10 @@ public class RegistrationDTO {
 		this.AGE_GROUPS.clear();
 		this.biometrics.clear();
 		this.biometricExceptions.clear();
+		this.faceBiometrics.clear();
 		this.BIO_CAPTURES.clear();
 		this.BIO_SCORES.clear();
+		this.SDK_SCORES.clear();
 		this.ATTEMPTS.clear();
 		this.SELECTED_CODES.clear();
 
@@ -230,19 +235,31 @@ public class RegistrationDTO {
 		this.biometrics.remove(key);
 		key = String.format("%s_%s", fieldId, Modality.EXCEPTION_PHOTO.name());
 		this.ATTEMPTS.remove(key);
-		Set<String> captureKeys = this.BIO_CAPTURES.keySet();
-		captureKeys.stream()
-				.filter( k -> k.startsWith(String.format("%s_%s_", fieldId, RegistrationConstants.notAvailableAttribute)))
-				.forEach( k -> {
-					this.BIO_CAPTURES.remove(k);
-				});
 
-		Set<String> scoreKeys = BIO_SCORES.keySet();
-		scoreKeys.stream()
-				.filter( k -> k.startsWith(String.format("%s_%s_", fieldId, Modality.EXCEPTION_PHOTO.name())))
-				.forEach( k -> {
-					this.BIO_SCORES.remove(k);
-				});
+		Iterator<Entry<String, byte[]>> bioCapturesIterator = this.BIO_CAPTURES.entrySet().iterator();
+		while (bioCapturesIterator.hasNext()) {
+		    Entry<String, byte[]> item = bioCapturesIterator.next();
+		    if (item.getKey().startsWith(String.format("%s_%s_", fieldId, RegistrationConstants.notAvailableAttribute))) {
+		    	bioCapturesIterator.remove();
+		    }
+		}
+
+		Iterator<Entry<String, Double>> bioScoresIterator = this.BIO_SCORES.entrySet().iterator();
+		while (bioScoresIterator.hasNext()) {
+		    Entry<String, Double> item = bioScoresIterator.next();
+		    if (item.getKey().startsWith(String.format("%s_%s_", fieldId, Modality.EXCEPTION_PHOTO.name()))) {
+		    	bioScoresIterator.remove();
+		    }
+		}
+
+		Iterator<Entry<String, Double>> sdkScoresIterator = this.SDK_SCORES.entrySet().iterator();
+		while (sdkScoresIterator.hasNext()) {
+			Entry<String, Double> item = sdkScoresIterator.next();
+			if (item.getKey().startsWith(String.format("%s_%s_", fieldId, Modality.EXCEPTION_PHOTO.name()))) {
+				sdkScoresIterator.remove();
+			}
+		}
+
 	}
 
 	public void clearBIOCache(String fieldId, String bioAttribute) {
@@ -257,6 +274,7 @@ public class RegistrationDTO {
 					.filter( k -> k.startsWith(String.format("%s_%s", fieldId, attr)))
 					.forEach( k -> {
 						this.BIO_SCORES.remove(k);
+						this.SDK_SCORES.remove(k);
 						this.BIO_CAPTURES.remove(k);
 						this.biometrics.remove(k);
 						this.biometricExceptions.remove(k);
@@ -268,10 +286,12 @@ public class RegistrationDTO {
 
 		keys.clear();
 		keys.addAll(this.BIO_SCORES.keySet());
+		keys.addAll(this.SDK_SCORES.keySet());
 		keys.stream()
 				.filter( k -> k.startsWith(key))
 				.forEach( k -> {
 					this.BIO_SCORES.remove(k);
+					this.SDK_SCORES.remove(k);
 				});
 	}
 
@@ -346,6 +366,11 @@ public class RegistrationDTO {
 								value.getQualityScore() >= savedRegistrationBiometric.getQualityScore())) {
 					addBiometric(fieldId, entry.getKey(), value);
 					//savedBiometrics.add(addBiometric(fieldId, entry.getKey(), value));
+				}
+
+				if(entry.getValue().getBioAttribute().equalsIgnoreCase(Modality.FACE.name())) {
+					String key = String.format("%s_%s", entry.getKey(), value.getNumOfRetries());
+					this.faceBiometrics.put(key, value);
 				}
 			}
 		}
