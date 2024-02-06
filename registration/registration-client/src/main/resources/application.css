@@ -630,7 +630,7 @@
 Working on new Css by taleev
 */
 #loginScreen {
-	-fx-background-image: url('/images/generic-background3.jpg');
+	-fx-background-image: url('/images/nigeriaBackground.jpg');
 	-fx-background-size: cover, auto;
 	-fx-background-position: left top, center;
 }

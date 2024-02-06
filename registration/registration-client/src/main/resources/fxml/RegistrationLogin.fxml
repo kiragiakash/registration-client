@@ -8,11 +8,11 @@
   <bottom>
     <HBox id="footer-section">
       <children>
-        <Label style="-fx-text-fill: white;" text="%mosip.io" />
+        <Label style="-fx-text-fill: black;" text="%mosip.io" />
         <Label text="  " />
-        <Label style="-fx-text-fill: white;" text="%regClientVersion" />
+        <Label style="-fx-text-fill: black;" text="%regClientVersion" />
         <Label text=" : " />
-        <Label style="-fx-text-fill: white;" fx:id="versionValueLabel" />
+        <Label style="-fx-text-fill: black;" fx:id="versionValueLabel" />
       </children>
     </HBox>
   </bottom>
