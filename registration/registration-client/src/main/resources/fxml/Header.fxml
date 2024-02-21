@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 
-<GridPane fx:id="headerParent" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="1000.0" styleClass="headerParentBorder" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.mosip.registration.controller.reg.HeaderController">
+<GridPane fx:id="headerParent" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="70.0" prefWidth="1000.0" styleClass="headerParentBorder" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.mosip.registration.controller.reg.HeaderController">
   <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" maxWidth="102.0" minWidth="10.0" percentWidth="5.0" prefWidth="30.0" />
     <ColumnConstraints hgrow="SOMETIMES" maxWidth="171.0" minWidth="10.0" percentWidth="3.0" prefWidth="157.0" />
@@ -18,12 +18,12 @@
     <RowConstraints percentHeight="100.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
-      <ImageView fx:id="mosipLogo" fitHeight="25.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="LEFT">
+      <ImageView fx:id="mosipLogo" fitHeight="44.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="LEFT">
          <image>
             <Image url="@../images/logo-final.png" />
          </image>
          <GridPane.margin>
-            <Insets left="22.0" />
+            <Insets left="10.0" />
          </GridPane.margin>
       </ImageView>
       <GridPane styleClass="headerDetails" GridPane.columnIndex="2">
