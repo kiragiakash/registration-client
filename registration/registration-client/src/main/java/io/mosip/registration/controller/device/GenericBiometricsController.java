@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javafx.scene.layout.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -63,11 +64,6 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -669,6 +665,10 @@ public class GenericBiometricsController extends BaseController {
 						getRegistrationDTOFromSession().BIO_CAPTURES.put(String.format("%s_%s_%s",
 								fieldId, dto.getBioAttribute(), retry),
 								FingerDecoder.convertFingerISOToImageBytes(convertRequestDto));
+						getRegistrationDTOFromSession().INDIVIDUAL_BIO_SCORE.put(String.format("%s_%s_%s",
+								fieldId, dto.getBioAttribute(), retry), dto.getQualityScore());
+						getRegistrationDTOFromSession().INDIVIDUAL_SDK_SCORE.put(String.format("%s_%s_%s",
+								fieldId, dto.getBioAttribute(), retry), dto.getSdkScore());
 						score += dto.getQualityScore();
 						sdkScore += dto.getSdkScore();
 					}
@@ -687,6 +687,10 @@ public class GenericBiometricsController extends BaseController {
 						getRegistrationDTOFromSession().BIO_CAPTURES.put(String.format("%s_%s_%s",
 								fieldId, dto.getBioAttribute(), retry),
 								IrisDecoder.convertIrisISOToImageBytes(convertRequestDto));
+						getRegistrationDTOFromSession().INDIVIDUAL_BIO_SCORE.put(String.format("%s_%s_%s",
+								fieldId, dto.getBioAttribute(), retry), dto.getQualityScore());
+						getRegistrationDTOFromSession().INDIVIDUAL_SDK_SCORE.put(String.format("%s_%s_%s",
+								fieldId, dto.getBioAttribute(), retry), dto.getSdkScore());
 						score += dto.getQualityScore();
 						sdkScore += dto.getSdkScore();
 					}
@@ -707,6 +711,10 @@ public class GenericBiometricsController extends BaseController {
 					getRegistrationDTOFromSession().BIO_CAPTURES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.getAttributes().get(0), retry),
 							FaceDecoder.convertFaceISOToImageBytes(convertRequestDto));
+					getRegistrationDTOFromSession().INDIVIDUAL_BIO_SCORE.put(String.format("%s_%s_%s",
+							fieldId, modalityName.getAttributes().get(0), retry), faceDto.getQualityScore());
+					getRegistrationDTOFromSession().INDIVIDUAL_SDK_SCORE.put(String.format("%s_%s_%s",
+							fieldId, modalityName.getAttributes().get(0), retry), faceDto.getSdkScore());
 					getRegistrationDTOFromSession().BIO_SCORES.put(String.format("%s_%s_%s",
 							fieldId, modalityName.name(), retry),
 							faceDto.getQualityScore());
@@ -811,6 +819,75 @@ public class GenericBiometricsController extends BaseController {
 
 		// Get the stream image from Bio ServiceImpl and load it in the image pane
 		biometricImage.setImage(getBioStreamImage(fieldId, modality, retry));
+		displayIndividualCombinedScore(fieldId, modality, retry);
+	}
+	public boolean isDisplayIndividualBioScoreRequired() {
+		String configValue = String.valueOf(ApplicationContext.map().get(RegistrationConstants.DISPLAY_INDIVIDUAL_BIO_SCORE));
+		return configValue == "F" ? false : true;
+	}
+	private void addSpacer(HBox qualityBox, Modality modality) {
+		if (modality != Modality.FACE) {
+			Region spacer = new Region();
+			HBox.setHgrow(spacer, Priority.ALWAYS);
+			qualityBox.getChildren().add(spacer);
+		}
+	}
+	public boolean isDisplayIndividualSdkScoreRequired() {
+		String configValue = String.valueOf(ApplicationContext.map().get(RegistrationConstants.DISPLAY_INDIVIDUAL_SDK_SCORE));
+		return configValue == "F" ? false : true;
+	}
+	private void getCombinedScoreLabels(String fieldId, Modality modality, int attempt, HBox scoreBox) {
+		List<byte[]> images = new LinkedList<>();
+		addSpacer(scoreBox, modality);
+		double thresholdValue = bioService.getMDMQualityThreshold(modality);
+		for (String attribute : modality.getAttributes()) {
+			Double bioScore = 0.0;
+			Double sdkScore = 0.0;
+			if (getRegistrationDTOFromSession().INDIVIDUAL_BIO_SCORE.containsKey(String.format("%s_%s_%s", fieldId, attribute, attempt))) {
+				bioScore = getRegistrationDTOFromSession().INDIVIDUAL_BIO_SCORE.get(String.format("%s_%s_%s", fieldId, attribute, attempt));
+			}
+			if (getRegistrationDTOFromSession().INDIVIDUAL_SDK_SCORE.containsKey(String.format("%s_%s_%s", fieldId, attribute, attempt))) {
+				sdkScore = getRegistrationDTOFromSession().INDIVIDUAL_SDK_SCORE.get(String.format("%s_%s_%s", fieldId, attribute, attempt));
+			}
+			String scoreStyleClass = "green-rounded-label";
+			if (bioScore.equals(0.0) && sdkScore.equals(0.0)) {
+				scoreStyleClass = "white-rounded-label";
+			} else if (bioScore < thresholdValue) {
+				scoreStyleClass = "red-rounded-label";
+			}
+			LOGGER.info("Stack MDS and SDK scores in the label");
+			String displayScore = String.format("MDS: %.2f\nSDK: %.2f", bioScore, sdkScore);
+			Label label = new Label(displayScore);
+			label.getStyleClass().add(scoreStyleClass);
+			label.setPrefHeight(70);
+			label.setAlignment(Pos.TOP_CENTER);
+			scoreBox.getChildren().add(label);
+			addSpacer(scoreBox, modality);
+		}
+	}
+	private void displayIndividualCombinedScore(String fieldId, Modality modality, int retry) {
+		if ((isDisplayIndividualBioScoreRequired() || isDisplayIndividualSdkScoreRequired()) && modality != Modality.EXCEPTION_PHOTO) {
+			biometricPane.getChildren().clear();
+			StackPane stackPane = new StackPane();
+			stackPane.getChildren().add(biometricImage);
+			biometricImage.getStyleClass().add("biometric-image");
+
+			if (retry > 0) {
+				HBox combinedBox = new HBox();
+				StackPane.setAlignment(combinedBox, Pos.TOP_CENTER);
+				combinedBox.getStyleClass().add("individual-quality-box");
+				combinedBox.setPrefHeight(70);
+				combinedBox.setMaxHeight(Region.USE_PREF_SIZE);
+
+				getCombinedScoreLabels(fieldId, modality, retry, combinedBox);
+				stackPane.getChildren().addAll(combinedBox);
+			}
+
+			biometricPane.getChildren().add(stackPane);
+		} else {
+			biometricPane.getChildren().clear();
+			biometricPane.getChildren().add(biometricImage);
+		}
 	}
 
 
@@ -944,7 +1021,7 @@ public class GenericBiometricsController extends BaseController {
 							bioService.getMDMQualityThreshold(currentModality), biometricImage,
 							qualityText, bioProgress);
 					//}
-
+					displayIndividualCombinedScore(fxControl.getUiSchemaDTO().getId(), currentModality, attempt);
 					LOGGER.info("Mouse Event by attempt Ended. modality : {}", currentModality);
 
 				} catch (RuntimeException runtimeException) {

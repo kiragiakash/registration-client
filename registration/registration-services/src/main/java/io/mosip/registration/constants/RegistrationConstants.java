@@ -986,7 +986,8 @@ public class RegistrationConstants {
 	public static final String IRIS_RETRY_COUNT = "mosip.registration.num_of_iris_retries";
 	public static final String FACE_RETRY_COUNT = "mosip.registration.num_of_face_retries";
 	public static final String PHOTO_RETRY_COUNT = "mosip.registration.num_of_photo_retries";
-
+	public static final String DISPLAY_INDIVIDUAL_BIO_SCORE = "mosip.registration.display_individual_bio_score";
+	public static final String DISPLAY_INDIVIDUAL_SDK_SCORE = "mosip.registration.display_individual_sdk_score";
 	/*public static final String[] LEFTHAND_SEGMNTD_FILE_PATHS = new String[] { "/fingerprints/lefthand/leftIndex/",
 			"/fingerprints/lefthand/leftLittle/", "/fingerprints/lefthand/leftMiddle/",
 			"/fingerprints/lefthand/leftRing/" };

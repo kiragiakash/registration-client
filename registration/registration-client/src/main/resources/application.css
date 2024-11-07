@@ -1161,7 +1161,7 @@ Working on new Css by taleev
 }
 
 .biometricPaneSelected {
-	-fx-background-color: #F0F0F0;
+	-fx-background-color: white;
 	-fx-border-color: #00A6E9;
 	-fx-border-width: 5;
 	-fx-padding: -2.5;
@@ -1169,7 +1169,7 @@ Working on new Css by taleev
 }
 
 .fingerPrintPanesSelected {
-	-fx-background-color: #F0F0F0;
+	-fx-background-color: white;
 	-fx-border-color: #EFEFEF;
 	-fx-border-width: 5.0;
 	-fx-padding: -2.5;
@@ -2698,4 +2698,35 @@ Working on new Css by taleev
 .tab:selected.tabErrorLabel .tab-label {
     -fx-text-fill: #FF0000;
     -fx-font-weight: bold;
+}
+.green-rounded-label {
+    -fx-background-color: #4c991b;
+    -fx-text-fill: white;
+    -fx-padding: 10px;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 15px;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+}
+.red-rounded-label {
+    -fx-background-color: #cc5c54;
+    -fx-text-fill: white;
+    -fx-padding: 10px;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 15px;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+}
+.individual-quality-box {
+    -fx-padding: 15 0 0 0;
+    -fx-alignment: top-center;
+}
+.white-rounded-label {
+    -fx-background-color: white;
+    -fx-text-fill: white;
+    -fx-padding: 10px;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 15px;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
 }
