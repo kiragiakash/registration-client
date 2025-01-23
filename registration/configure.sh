@@ -39,6 +39,7 @@ then
 	echo "Found thirdparty SDK"
 	wget "$reg_client_sdk_url" -O sdkDependency.zip
 	mkdir -p sdkDependency
+ 	echo "createdted the sdkDependency directory"
 	/usr/bin/unzip /sdkDependency.zip -d sdkDependency/
 	cp /sdkDependency/*.jar /sdkjars/
 	echo "Downloading MOCK SDK..."
