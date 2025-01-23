@@ -41,7 +41,7 @@ then
 	mkdir -p sdkDependency
  	echo "createdted the sdkDependency directory"
 	/usr/bin/unzip /sdkDependency.zip -d sdkDependency/
-	cp /sdkDependency/*.jar /sdkjars/
+	cp sdkDependency/*.jar /sdkjars/
 	echo "Downloading MOCK SDK..."
 	wget "${artifactory_url}/artifactory/libs-release-local/mock-sdk/1.1.5/mock-sdk.jar" -O /sdkjars/mock-sdk.jar
 else
