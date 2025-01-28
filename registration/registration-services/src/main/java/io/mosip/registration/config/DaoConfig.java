@@ -237,6 +237,8 @@ public class DaoConfig extends HibernateDaoConfig {
 		this.driverManagerDataSource.setUrl(String.format(URL, dbPath, dbConf.get(BOOTPWD_KEY)));
 		this.driverManagerDataSource.setUsername(dbConf.get(USERNAME_KEY));
 		this.driverManagerDataSource.setPassword(dbConf.get(PWD_KEY));
+		LOGGER.info("jdbc:derby:"+dbPath+";"+ENCRYPTION_URL_ATTRIBUTES+";bootPassword= {} USERNAME_KEY= {} PWD_KEY= {}", dbConf.get(BOOTPWD_KEY),
+				dbConf.get(USERNAME_KEY), dbConf.get(PWD_KEY));
 	}
 
 	private static void shutdownDatabase() {
